@@ -10,6 +10,13 @@ const editorFake = {
 	onDidDestroy() {},
 	getPath() { return testFilePath }
 };
+const statusBarFake = {
+	addLeftTile() {
+		return {
+			dispose() {}
+		};
+	}
+};
 
 // Use the command `window:run-package-specs` (cmd-alt-ctrl-p) to run specs.
 //
@@ -30,23 +37,13 @@ describe('AtomIntegrity', () => {
 
 			AtomIntegrity.activate();
 
-			runs(() => {
-				expect(atom.workspace.observeTextEditors).toHaveBeenCalled();
-				expect(atom.workspace.observeActivePaneItem).toHaveBeenCalled();
-			});
+			expect(atom.workspace.observeTextEditors).toHaveBeenCalled();
+			expect(atom.workspace.observeActivePaneItem).toHaveBeenCalled();
 		});
 
 		it('cleans up after itself', () => {
-			const statusBar = {
-				addLeftTile() {
-					return {
-						dispose() {}
-					};
-				}
-			};
-
 			AtomIntegrity.activate();
-			AtomIntegrity.consumeStatusBar(statusBar);
+			AtomIntegrity.consumeStatusBar(statusBarFake);
 
 			spyOn(AtomIntegrity.subscriptions, 'dispose');
 			spyOn(AtomIntegrity.statusbarPanel, 'dispose');
@@ -100,12 +97,10 @@ describe('AtomIntegrity', () => {
 
 		it('adds status bar panel', () => {
 			AtomIntegrity.activate();
-			runs(() => {
-				AtomIntegrity.consumeStatusBar({
-					addLeftTile(obj) {
-						expect(obj.item).toEqual(AtomIntegrity.statusbarPanelItem);
-					}
-				});
+			AtomIntegrity.consumeStatusBar({
+				addLeftTile(obj) {
+					expect(obj.item).toEqual(AtomIntegrity.statusbarPanelItem);
+				}
 			});
 
 		});
@@ -121,27 +116,21 @@ describe('AtomIntegrity', () => {
 
 			AtomIntegrity.activate();
 
-			runs(() => {
-				AtomIntegrity.onStatusPanelItemClick(evt);
-				expect(atom.clipboard.read()).toEqual('foobar');
-			});
+			AtomIntegrity.onStatusPanelItemClick(evt);
+			expect(atom.clipboard.read()).toEqual('foobar');
 		});
 
 		it('adds status bar panel, registers click event, and registers tooltip', () => {
-			const statusBar = {
-				addLeftTile() {}
-			};
-
 			spyOn(AtomIntegrity.statusbarPanelItem, 'addEventListener');
-			spyOn(statusBar, 'addLeftTile');
+			spyOn(statusBarFake, 'addLeftTile');
 			spyOn(AtomIntegrity, 'registerTooltip');
 
 			AtomIntegrity.activate();
-			AtomIntegrity.consumeStatusBar(statusBar);
+			AtomIntegrity.consumeStatusBar(statusBarFake);
 
 			expect(AtomIntegrity.statusbarPanelItem.addEventListener.callCount).toEqual(1);
 			expect(AtomIntegrity.registerTooltip.callCount).toEqual(1);
-			expect(statusBar.addLeftTile.wasCalled).toEqual(true);
+			expect(statusBarFake.addLeftTile.wasCalled).toEqual(true);
 		});
 
 		it('assigns hash to status bar panel item dataset', () => {
@@ -174,17 +163,13 @@ describe('AtomIntegrity', () => {
 		it('registers tooltip', () => {
 			AtomIntegrity.activate();
 
-			runs(() => {
+			spyOn(atom.tooltips, 'add');
+			spyOn(AtomIntegrity.subscriptions, 'add');
 
-				spyOn(atom.tooltips, 'add');
-				spyOn(AtomIntegrity.subscriptions, 'add');
+			AtomIntegrity.registerTooltip();
 
-				AtomIntegrity.registerTooltip();
-
-				expect(atom.tooltips.add).toHaveBeenCalled();
-				expect(AtomIntegrity.subscriptions.add).toHaveBeenCalled();
-			});
-
+			expect(atom.tooltips.add).toHaveBeenCalled();
+			expect(AtomIntegrity.subscriptions.add).toHaveBeenCalled();
 		});
 	});
 
