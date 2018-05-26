@@ -1,0 +1,26 @@
+{
+  "context-menu": {
+    "atom-text-editor": [
+      {
+        "label": "Toggle atom-integrity",
+        "command": "atom-integrity:toggle"
+      }
+    ]
+  },
+  "menu": [
+    {
+      "label": "Packages",
+      "submenu": [
+        {
+          "label": "Atom Integrity",
+          "submenu": [
+            {
+              "label": "Settings",
+              "command": "atom-integrity:settings"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
