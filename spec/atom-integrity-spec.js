@@ -5,6 +5,11 @@ import AtomIntegrity from '../lib/atom-integrity';
 const testFilePath = __dirname + '/testfile.js';
 const testHash256 = 'sha256-S7qN42nuB0oR0xwQMlje3fl1VLkoKLGVUN1ZmsEFt/U';
 const testHash512 = 'sha512-uySecrA0ELBwC2urESX4FQnKLfpGA/bLBLq9IiwitWfmuMjj6R14DPlWNTn0l4bgYtzjPk6JMceMiZIJhOswJA';
+const editorFake = {
+	onDidSave() {},
+	onDidDestroy() {},
+	getPath() { return testFilePath }
+};
 
 // Use the command `window:run-package-specs` (cmd-alt-ctrl-p) to run specs.
 //
@@ -18,7 +23,7 @@ describe('AtomIntegrity', () => {
 		workspaceElement = atom.views.getView(atom.workspace);
 	});
 
-	describe('Activation', () => {
+	describe('Activation and Deactivation', () => {
 		it('registers text editor observer and active pane observer', () => {
 			spyOn(atom.workspace, 'observeTextEditors');
 			spyOn(atom.workspace, 'observeActivePaneItem');
@@ -29,6 +34,65 @@ describe('AtomIntegrity', () => {
 				expect(atom.workspace.observeTextEditors).toHaveBeenCalled();
 				expect(atom.workspace.observeActivePaneItem).toHaveBeenCalled();
 			});
+		});
+
+		it('cleans up after itself', () => {
+			const statusBar = {
+				addLeftTile() {
+					return {
+						dispose() {}
+					};
+				}
+			};
+
+			AtomIntegrity.activate();
+			AtomIntegrity.consumeStatusBar(statusBar);
+
+			spyOn(AtomIntegrity.subscriptions, 'dispose');
+			spyOn(AtomIntegrity.statusbarPanel, 'dispose');
+
+			AtomIntegrity.deactivate();
+
+			expect(AtomIntegrity.subscriptions.dispose).toHaveBeenCalled();
+			expect(AtomIntegrity.statusbarPanel.dispose).toHaveBeenCalled();
+		});
+	});
+
+	describe('Wiring to TextEditor Events/Hooks in onObserveTextEditor', () => {
+		it('wires up to onDidSave', () => {
+			spyOn(editorFake, 'onDidSave');
+
+			AtomIntegrity.activate();
+			AtomIntegrity.onObserveTextEditor(editorFake);
+
+			expect(editorFake.onDidSave).toHaveBeenCalled();
+		});
+
+		it('wires up to onDidDestroy', () => {
+			spyOn(editorFake, 'onDidDestroy');
+
+			AtomIntegrity.activate();
+			AtomIntegrity.onObserveTextEditor(editorFake);
+
+			expect(editorFake.onDidDestroy).toHaveBeenCalled();
+		});
+
+		it('calls processFile', () => {
+			spyOn(AtomIntegrity, 'processFile');
+
+			AtomIntegrity.activate();
+			AtomIntegrity.onObserveTextEditor(editorFake);
+
+			expect(AtomIntegrity.processFile).toHaveBeenCalled();
+		});
+
+		it('calls processFile for path provided by observed editor', () => {
+			spyOn(AtomIntegrity, 'processFile');
+
+			AtomIntegrity.activate();
+			AtomIntegrity.onObserveTextEditor(editorFake);
+
+			expect(AtomIntegrity.processFile.calls[0].args[0]).toEqual(testFilePath);
 		});
 	});
 
@@ -46,7 +110,7 @@ describe('AtomIntegrity', () => {
 
 		});
 
-		it('sets hash value on click', () => {
+		it('sets hash value from click handler call', () => {
 			const evt = {
 				currentTarget: {
 					dataset: {
@@ -61,6 +125,23 @@ describe('AtomIntegrity', () => {
 				AtomIntegrity.onStatusPanelItemClick(evt);
 				expect(atom.clipboard.read()).toEqual('foobar');
 			});
+		});
+
+		it('adds status bar panel, registers click event, and registers tooltip', () => {
+			const statusBar = {
+				addLeftTile() {}
+			};
+
+			spyOn(AtomIntegrity.statusbarPanelItem, 'addEventListener');
+			spyOn(statusBar, 'addLeftTile');
+			spyOn(AtomIntegrity, 'registerTooltip');
+
+			AtomIntegrity.activate();
+			AtomIntegrity.consumeStatusBar(statusBar);
+
+			expect(AtomIntegrity.statusbarPanelItem.addEventListener.callCount).toEqual(1);
+			expect(AtomIntegrity.registerTooltip.callCount).toEqual(1);
+			expect(statusBar.addLeftTile.wasCalled).toEqual(true);
 		});
 
 		it('assigns hash to status bar panel item dataset', () => {
@@ -138,7 +219,7 @@ describe('AtomIntegrity', () => {
 			AtomIntegrity.processFile(path);
 
 			expect(AtomIntegrity.clearIntegrityPanel).toHaveBeenCalled();
-			expect(AtomIntegrity.generateIntegrityString.calls.length).toEqual(0);
+			expect(AtomIntegrity.generateIntegrityString.wasCalled).toEqual(false);
 		});
 
 		it('does not call panel clear method when valid path is passed', () => {
@@ -149,13 +230,13 @@ describe('AtomIntegrity', () => {
 
 			AtomIntegrity.processFile(path);
 
-			expect(AtomIntegrity.clearIntegrityPanel.calls.length).toEqual(0);
+			expect(AtomIntegrity.clearIntegrityPanel.wasCalled).toEqual(false);
 			expect(AtomIntegrity.generateIntegrityString).toHaveBeenCalled();
 		});
 	});
 
 	describe('Hash Generation', () => {
-		it('hashes using sha256', () => {
+		it('hashes using sha256 via processFile', () => {
 			atom.config.set('atom-integrity.cypher', 'sha256');
 
 			waitsForPromise(() => {
@@ -168,12 +249,38 @@ describe('AtomIntegrity', () => {
 			});
 		});
 
-		it('hashes using sha512', () => {
+		it('hashes using sha512 via processFile', () => {
 			atom.config.set('atom-integrity.cypher', 'sha512');
 
 			waitsForPromise(() => {
 				return new Promise((resolve, reject) => {
 					AtomIntegrity.processFile(testFilePath, (hash) => {
+						expect(hash).toEqual(testHash512);
+						resolve();
+					});
+				});
+			});
+		});
+
+		it('hashes using sha256 via generateIntegrityString', () => {
+			atom.config.set('atom-integrity.cypher', 'sha256');
+
+			waitsForPromise(() => {
+				return new Promise((resolve, reject) => {
+					AtomIntegrity.generateIntegrityString(testFilePath, (hash) => {
+						expect(hash).toEqual(testHash256);
+						resolve();
+					});
+				});
+			});
+		});
+
+		it('hashes using sha512 via generateIntegrityString', () => {
+			atom.config.set('atom-integrity.cypher', 'sha512');
+
+			waitsForPromise(() => {
+				return new Promise((resolve, reject) => {
+					AtomIntegrity.generateIntegrityString(testFilePath, (hash) => {
 						expect(hash).toEqual(testHash512);
 						resolve();
 					});
