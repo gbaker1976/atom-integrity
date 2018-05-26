@@ -154,7 +154,6 @@ describe('AtomIntegrity', () => {
 		});
 	});
 
-	// TODO: test hash script
 	describe('Hash Generation', () => {
 		it('hashes using sha256', () => {
 			atom.config.set('atom-integrity.cypher', 'sha256');
