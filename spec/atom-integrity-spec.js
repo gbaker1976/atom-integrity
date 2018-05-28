@@ -32,8 +32,8 @@ describe('AtomIntegrity', () => {
 
 	describe('Activation and Deactivation', () => {
 		it('registers text editor observer and active pane observer', () => {
-			spyOn(atom.workspace, 'observeTextEditors');
-			spyOn(atom.workspace, 'observeActivePaneItem');
+			spyOn(atom.workspace, 'observeTextEditors').andCallThrough();
+			spyOn(atom.workspace, 'observeActivePaneItem').andCallThrough();
 
 			AtomIntegrity.activate();
 
@@ -128,8 +128,8 @@ describe('AtomIntegrity', () => {
 			AtomIntegrity.activate();
 			AtomIntegrity.consumeStatusBar(statusBarFake);
 
-			expect(AtomIntegrity.statusbarPanelItem.addEventListener.callCount).toEqual(1);
-			expect(AtomIntegrity.registerTooltip.callCount).toEqual(1);
+			expect(AtomIntegrity.statusbarPanelItem.addEventListener.wasCalled).toEqual(true);
+			expect(AtomIntegrity.registerTooltip.wasCalled).toEqual(true);
 			expect(statusBarFake.addLeftTile.wasCalled).toEqual(true);
 		});
 
