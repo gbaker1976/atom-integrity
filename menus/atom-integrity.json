@@ -2,8 +2,8 @@
   "context-menu": {
     "atom-text-editor": [
       {
-        "label": "Toggle atom-integrity",
-        "command": "atom-integrity:toggle"
+        "label": "Copy Current File's Hash to Clipboard",
+        "command": "atom-integrity:hash-copy"
       }
     ]
   },
@@ -17,7 +17,11 @@
             {
               "label": "Settings",
               "command": "atom-integrity:settings"
-            }
+		  },
+		  {
+			  "label": "Copy Current File's Hash to Clipboard",
+			  "command": "atom-integrity:hash-copy"
+		  }
           ]
         }
       ]

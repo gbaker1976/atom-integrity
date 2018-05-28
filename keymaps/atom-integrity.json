@@ -1,5 +1,5 @@
 {
   "atom-workspace": {
-    "ctrl-alt-o": "atom-integrity:toggle"
+    "ctrl-alt-o": "atom-integrity:hash-copy"
   }
 }
