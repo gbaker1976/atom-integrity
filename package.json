@@ -2,11 +2,8 @@
 	"name": "atom-integrity",
 	"main": "./lib/atom-integrity",
 	"version": "0.0.0",
-	"description": "A short description of your package",
+	"description": "Generates hashes of JavaScript and CSS files for use as subresource integrity values.",
 	"keywords": [],
-	"activationCommands": {
-		"atom-workspace": "atom-integrity:hash-copy"
-	},
 	"activationHooks": ["language-css:grammar-used", "language-js:grammar-used"],
 	"repository": "https://github.com/gbaker1976/atom-integrity",
 	"license": "MIT",

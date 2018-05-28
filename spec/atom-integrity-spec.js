@@ -149,7 +149,7 @@ describe('AtomIntegrity', () => {
 
 			AtomIntegrity.displayHash(testHash256);
 
-			expect(AtomIntegrity.statusbarPanelItem.classList.add).toHaveBeenCalledWith('atom-integrity', 'badge', 'badge-info', 'badge-small');
+			expect(AtomIntegrity.statusbarPanelItem.classList.add).toHaveBeenCalledWith('atom-integrity', 'badge', 'badge-small');
 			expect(
 				AtomIntegrity.statusbarPanelItem
 				.querySelector('.cypher')
@@ -182,6 +182,39 @@ describe('AtomIntegrity', () => {
 			expect(AtomIntegrity.pathMatchesAllowedFiles('/foo/bar/baz.axjs')).toBe(false);
 			expect(AtomIntegrity.pathMatchesAllowedFiles('/foo/bar/baz.scss')).toBe(false);
 			expect(AtomIntegrity.pathMatchesAllowedFiles('/foo/bar/baz.cssop')).toBe(false);
+		});
+
+		it('hashes current open file to clipboard', () => {
+			const callback = () => {};
+
+			spyOn(atom.workspace, 'getActiveTextEditor').andCallFake(() => {
+				return editorFake;
+			});
+			spyOn(atom.clipboard, 'write');
+			spyOn(AtomIntegrity, 'processFile').andCallFake((path, callback) => {
+				callback(testHash256);
+			});
+
+			AtomIntegrity.hashCurrentFileToClipboard();
+
+			expect(AtomIntegrity.processFile).toHaveBeenCalled();
+			expect(atom.clipboard.write).toHaveBeenCalled();
+		});
+
+		it('hashes selected file to clipboard', () => {
+			const targetFake = {
+				dataset: { path: testFilePath }
+			};
+
+			spyOn(atom.clipboard, 'write');
+			spyOn(AtomIntegrity, 'processFile').andCallFake((path, callback) => {
+				callback(testHash256);
+			});
+
+			AtomIntegrity.hashSelectedFileToClipboard(targetFake);
+
+			expect(AtomIntegrity.processFile).toHaveBeenCalled();
+			expect(atom.clipboard.write).toHaveBeenCalled();
 		});
 
 		it('passes correct path to hash method', () => {
