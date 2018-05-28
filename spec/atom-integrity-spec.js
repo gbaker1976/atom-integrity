@@ -149,7 +149,7 @@ describe('AtomIntegrity', () => {
 
 			AtomIntegrity.displayHash(testHash256);
 
-			expect(AtomIntegrity.statusbarPanelItem.classList.add).toHaveBeenCalledWith('atom-integrity', 'badge', 'badge-small');
+			expect(AtomIntegrity.statusbarPanelItem.classList.add).toHaveBeenCalledWith('atom-integrity');
 			expect(
 				AtomIntegrity.statusbarPanelItem
 				.querySelector('.cypher')
