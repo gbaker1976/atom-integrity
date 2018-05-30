@@ -20,3 +20,6 @@ In the editor pane of a supported file type, you can select the **Copy Current F
 
 ### Project Pane Context Menu
 In the project pane, you can select the **Copy File Hash** context menu option to copy the selected file's hash to your clipboard.
+
+## Settings
+You may change the hash algorithm in package settings. The current options are sha256 and sha512.
