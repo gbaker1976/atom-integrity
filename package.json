@@ -2,7 +2,7 @@
 	"name": "atom-integrity",
 	"main": "./lib/atom-integrity",
 	"version": "0.0.0",
-	"description": "Generates hashes of JavaScript and CSS files for use as subresource integrity values.",
+	"description": "A simple subresource integrity hash generator for JavaScript and CSS files.",
 	"keywords": [],
 	"activationHooks": ["language-css:grammar-used", "language-js:grammar-used"],
 	"repository": "https://github.com/gbaker1976/atom-integrity",
