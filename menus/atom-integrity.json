@@ -13,10 +13,7 @@
 		"label": "Packages",
 		"submenu": [{
 			"label": "Atom Integrity",
-			"submenu": [{
-					"label": "Settings",
-					"command": "atom-integrity:settings"
-				},
+			"submenu": [
 				{
 					"label": "Copy Current File's Hash to Clipboard",
 					"command": "atom-integrity:hash-copy"
