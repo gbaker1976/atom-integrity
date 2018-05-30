@@ -1,21 +1,24 @@
 {
-	"name": "atom-integrity",
-	"main": "./lib/atom-integrity",
-	"version": "0.0.0",
-	"description": "A simple subresource integrity hash generator for JavaScript and CSS files.",
-	"keywords": [],
-	"activationHooks": ["language-css:grammar-used", "language-js:grammar-used"],
-	"repository": "https://github.com/gbaker1976/atom-integrity",
-	"license": "MIT",
-	"engines": {
-		"atom": ">=1.0.0 <2.0.0"
-	},
-	"dependencies": {},
-	"consumedServices": {
-		"status-bar": {
-			"versions": {
-				"^1.0.0": "consumeStatusBar"
-			}
-		}
-	}
+  "name": "atom-integrity",
+  "main": "./lib/atom-integrity",
+  "version": "0.1.0",
+  "description": "A simple subresource integrity hash generator for JavaScript and CSS files.",
+  "keywords": [],
+  "activationHooks": [
+    "language-css:grammar-used",
+    "language-js:grammar-used"
+  ],
+  "repository": "https://github.com/gbaker1976/atom-integrity",
+  "license": "MIT",
+  "engines": {
+    "atom": ">=1.0.0 <2.0.0"
+  },
+  "dependencies": {},
+  "consumedServices": {
+    "status-bar": {
+      "versions": {
+        "^1.0.0": "consumeStatusBar"
+      }
+    }
+  }
 }
